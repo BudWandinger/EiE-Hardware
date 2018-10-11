@@ -1,0 +1,15 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: LedBlinker End.PcbDoc   12/21/2014  10:33:39 AM
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : LedBlinker End.TXT
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        17mil (0.4318mm)         Round          25               5.00 Inch (127.06 mm)
+T2        70mil (1.778mm)          Round          2         NPTH   0.90 Inch (22.86 mm)
+---------------------------------------------------------------------------
+Totals                                            27               5.90 Inch (149.92 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:00

@@ -1,0 +1,664 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V5.51.5.59999/W32 for MSP430       16/Sep/2014  15:09:58 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  D:\Products\active_designs\BLINK-EFW-01\blink-efwd-01.c #
+#    Command line  =  D:\Products\active_designs\BLINK-EFW-01\blink-efwd-01.c #
+#                      -lC D:\Products\active_designs\BLINK-EFW-01\Debug\List #
+#                     \ -o D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\ #
+#                      --no_cse --no_unroll --no_inline --no_code_motion      #
+#                     --no_tbaa --debug -D__MSP430F2122__ -e --double=32      #
+#                     --dlib_config "C:\Program Files\IAR                     #
+#                     Systems\EW430_KS_5_51_5\430\LIB\DLIB\dl430fn.h" -On     #
+#                     --segment __data16=DATA16 --segment __data20=DATA20     #
+#    List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\blin #
+#                     k-efwd-01.lst                                           #
+#    Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\blink #
+#                     -efwd-01.r43                                            #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\Products\active_designs\BLINK-EFW-01\blink-efwd-01.c
+      1          /**********************************************************************
+      2          * Supporting functions for LED Blinker
+      3          **********************************************************************/
+      4          
+      5          /************************ Revision History ****************************
+      6          YYYY-MM-DD  Comments
+      7          -------------------------------------------------------------------------------------------
+      8          2013-09-14  First release. 
+      9          
+     10          ************************************************************************/
+     11          
+     12          #include "io430.h"
+
+   \                                 In  segment DATA16_AN, at 0x21
+   \   union <unnamed> volatile _A_P1OUT
+   \                     _A_P1OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x23
+   \   union <unnamed> volatile _A_P1IFG
+   \                     _A_P1IFG:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x25
+   \   union <unnamed> volatile _A_P1IE
+   \                     _A_P1IE:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x29
+   \   union <unnamed> volatile _A_P2OUT
+   \                     _A_P2OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x19
+   \   union <unnamed> volatile _A_P3OUT
+   \                     _A_P3OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x160
+   \   union <unnamed> volatile _A_TA0CTL
+   \                     _A_TA0CTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x170
+   \   unsigned short volatile TA0R
+   \                     TA0R:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x172
+   \   unsigned short volatile TA0CCR0
+   \                     TA0CCR0:
+   \   000000                DS8 2
+     13          #include "typedef_MSP430.h"
+     14          #include "intrinsics.h"
+     15          #include "blink-efwd-01.h"
+     16          #include "main.h"
+     17          
+     18          /******************** External Globals ************************/
+     19          /* Globally available variables from other files as indicated */
+     20          
+     21          
+     22          /******************** Program Globals ************************/
+     23          /* Global variable definitions intended for scope across multiple files */
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     24          fnCode_type BlinkStateMachine = BlinkSM_Initialize;   /* The application state machine */
+   \                     BlinkStateMachine:
+   \   000000                DS8 2
+   \   000002                REQUIRE `?<Initializer for BlinkStateMachine>`
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     25          fnCode_type G_fCurrentStateMachine = BlinkSM_Off;  
+   \                     G_fCurrentStateMachine:
+   \   000000                DS8 2
+   \   000002                REQUIRE `?<Initializer for G_fCurrentStateMachine>`
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     26          fnCode_type G_pfPatterns[] = {BlinkSM_Off, ClockwiseSetup, BlinkSM_Pulse, BlinkSM_On};
+   \                     G_pfPatterns:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for G_pfPatterns>`
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     27          volatile u8 G_u8ActivePattern = 0;                    /* Active LED pattern */
+   \                     G_u8ActivePattern:
+   \   000000                DS8 1
+     28           
+     29          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     30          volatile u16 u16GlobalRuntimeFlags = 0;               /* Flag register for communicating various runtime events. */
+   \                     u16GlobalRuntimeFlags:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     31          volatile u16 u16GlobalErrorFlags = 0;                 /* Flag register for communicating errors. */
+   \                     u16GlobalErrorFlags:
+   \   000000                DS8 2
+     32          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     33          volatile u16 u16GlobalCurrentSleepInterval;           /* Duration that the device will sleep */
+   \                     u16GlobalCurrentSleepInterval:
+   \   000000                DS8 2
+     34          //volatile u16 u16GlobalSleepCounter;                   /* Active sleep cycle counter */
+     35          
+     36          
+     37          
+     38          /******************** Local Globals ************************/
+     39          /* Global variable definitions intended only for the scope of this file */
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     40          u8 LG_u8Leds[]                    = {P1_2_LED1,    P1_1_LED5,    P3_6_LED2,    P3_2_LED6,    P3_1_LED3,    P3_0_LED7,    P2_2_LED4,    P1_3_LED8};
+   \                     LG_u8Leds:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for LG_u8Leds>`
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     41          u16*  LG_pu16LedPorts[TOTAL_LEDS] = {(u16*)0x0021, (u16*)0x0021, (u16*)0x0019, (u16*)0x0019, (u16*)0x0019, (u16*)0x0019, (u16*)0x0029, (u16*)0x0021};
+   \                     LG_pu16LedPorts:
+   \   000000                DS8 16
+   \   000010                REQUIRE `?<Initializer for LG_pu16LedPorts>`
+     42          
+     43          //u8 LG_u8Leds[]                    = {P1_2_LED1,    P3_6_LED2,    P3_1_LED3,    P2_2_LED4,    P1_1_LED5,    P3_2_LED6,    P3_0_LED7,    P1_3_LED8};
+     44          //u16*  LG_pu16LedPorts[TOTAL_LEDS] = {(u16*)0x0021, (u16*)0x0019, (u16*)0x0019, (u16*)0x0029, (u16*)0x0021, (u16*)0x0019, (u16*)0x0019, (u16*)0x0021};
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     45          u8  LG_u8ActiveIndex  = 0;
+   \                     LG_u8ActiveIndex:
+   \   000000                DS8 1
+     46          
+     47          
+     48          /******************** Function Definitions ************************/
+     49          /*------------------------------------------------------------------------------
+     50          Function: TestBlink
+     51          
+     52          Description:
+     53          Non-returning brute force function to blink LED
+     54          Speed depends on clock and delay cycles in the loop.
+     55           
+     56          Requires:
+     57            - Active-high LED on Port 1 with the label defined as LED1 
+     58          
+     59          Promises:
+     60            - Port 1 LED pin toggled at x Hz, thus an LED will blink at x/2 Hz.
+     61          */
+
+   \                                 In  segment CODE, align 2
+     62          void TestBlink()
+   \                     TestBlink:
+   \                     ??TestBlink_1:
+     63          {
+     64          /* A quick test function to blink the LEDs with brute force at x Hz */
+     65          	while(1)
+     66            {
+     67          	  for(u16 i = 5000; i != 0; i--); 	/* 6 cycle loop */
+   \   000000   3F408813     MOV.W   #0x1388, R15
+   \                     ??TestBlink_0:
+   \   000004   0F93         CMP.W   #0x0, R15
+   \   000006   0224         JEQ     ??TestBlink_2
+   \   000008   3F53         ADD.W   #0xffff, R15
+   \   00000A   FC3F         JMP     ??TestBlink_0
+     68              P2OUT ^= P2_2_LED4; 	/* Takes 5 instruction cycles */	
+   \                     ??TestBlink_2:
+   \   00000C   E2E22900     XOR.B   #0x4, &0x29
+   \   000010   F73F         JMP     ??TestBlink_1
+   \   000012                REQUIRE _A_P2OUT
+     69          	} 
+     70          } /* end TestBlink */
+     71          
+     72          
+     73          /*------------------------------------------------------------------------------
+     74          Function: SetTimer
+     75          
+     76          Description:
+     77          Sets the TACCRO register, clears timer and clear the interrupt flag.
+     78           
+     79          Requires:
+     80            - usTaccr0_ is the value to which TACCRO will be set, where the time before interrupt in seconds
+     81              is usTaccr0_ * (8/32768).  e.g. TACCRO = 12288 is a 3000ms delay.
+     82          
+     83          Promises:
+     84            - Timer is reset to 0
+     85            - The timer interrupt flag is cleared
+     86            - TACCRO is loaded with usTaccr0_
+     87          */
+
+   \                                 In  segment CODE, align 2
+     88          void SetTimer(u16 usTaccr0_)
+   \                     SetTimer:
+     89          /* Sets the TACCRO register, clears timer and the interrupt flag */
+     90          {
+     91            TAR = 0;
+   \   000000   82437001     MOV.W   #0x0, &0x170
+     92          	TACCR0 = usTaccr0_;	
+   \   000004   824C7201     MOV.W   R12, &0x172
+     93          	TACTL &= ~TAIFG; 
+   \   000008   92C36001     BIC.W   #0x1, &0x160
+     94            
+     95          } /* end SetTimer */
+   \   00000C   3041         RET
+   \   00000E                REQUIRE TA0R
+   \   00000E                REQUIRE TA0CCR0
+   \   00000E                REQUIRE _A_TA0CTL
+     96            
+     97          
+     98          /****************************************************************************************
+     99          State Machine Functions
+    100          ****************************************************************************************/
+
+   \                                 In  segment CODE, align 2
+    101          void BlinkSM_Initialize()
+   \                     BlinkSM_Initialize:
+    102          {
+    103            /* Reset key variables */
+    104            u16GlobalCurrentSleepInterval = TIME_MAX;
+   \   000000   B243....     MOV.W   #0xffff, &u16GlobalCurrentSleepInterval
+    105              
+    106            /* Allow a button interrupt and timer to wake up sleep */
+    107            P1IFG &= ~P1_0_BUTTON;
+   \   000004   D2C32300     BIC.B   #0x1, &0x23
+    108            P1IE |= P1_0_BUTTON;				
+   \   000008   D2D32500     BIS.B   #0x1, &0x25
+    109            TACTL = TIMERA_INT_ENABLE;
+   \   00000C   B24096016001 MOV.W   #0x196, &0x160
+    110                 
+    111            BlinkStateMachine = BlinkSM_Sleep;
+   \   000012   B240........ MOV.W   #BlinkSM_Sleep, &BlinkStateMachine
+    112            
+    113          } /* end BlinkSM_Initialize */
+   \   000018   3041         RET
+   \   00001A                REQUIRE _A_P1IFG
+   \   00001A                REQUIRE _A_P1IE
+   \   00001A                REQUIRE _A_TA0CTL
+    114          
+    115          
+    116          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    117          void ClockwiseSetup()
+   \                     ClockwiseSetup:
+    118          {
+    119            P1OUT &= ~(P1_2_LED1 | P1_1_LED5 | P1_3_LED8);
+   \   000000   F2F0F1002100 AND.B   #0xf1, &0x21
+    120            P2OUT &= ~(P2_2_LED4);
+   \   000006   E2C22900     BIC.B   #0x4, &0x29
+    121            P3OUT &= ~(P3_0_LED7 | P3_1_LED3 | P3_2_LED6 | P3_6_LED2);
+   \   00000A   F2F0B8001900 AND.B   #0xb8, &0x19
+    122            
+    123            LG_u8ActiveIndex = 0;
+   \   000010   C243....     MOV.B   #0x0, &LG_u8ActiveIndex
+    124            u16GlobalCurrentSleepInterval = TIME_125MS;
+   \   000014   B2407401.... MOV.W   #0x174, &u16GlobalCurrentSleepInterval
+    125            G_fCurrentStateMachine = BlinkSM_Clockwise;
+   \   00001A   B240........ MOV.W   #BlinkSM_Clockwise, &G_fCurrentStateMachine
+    126            BlinkStateMachine = BlinkSM_Clockwise; 
+   \   000020   B240........ MOV.W   #BlinkSM_Clockwise, &BlinkStateMachine
+    127          
+    128          } /* end ClockwiseSetup() */
+   \   000026   3041         RET
+   \   000028                REQUIRE _A_P1OUT
+   \   000028                REQUIRE _A_P2OUT
+   \   000028                REQUIRE _A_P3OUT
+    129          
+    130            
+    131          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    132          void BlinkSM_Clockwise()
+   \                     BlinkSM_Clockwise:
+    133          {
+    134            for(u8 i = 0; i < TOTAL_LEDS; i++)
+   \   000000   4E43         MOV.B   #0x0, R14
+   \                     ??BlinkSM_Clockwise_0:
+   \   000002   7E92         CMP.B   #0x8, R14
+   \   000004   1A2C         JC      ??BlinkSM_Clockwise_1
+    135            {
+    136              /* Turn the current active light on */
+    137              if(i == LG_u8ActiveIndex)
+   \   000006   5E92....     CMP.B   &LG_u8ActiveIndex, R14
+   \   00000A   0B20         JNE     ??BlinkSM_Clockwise_2
+    138              {
+    139                *LG_pu16LedPorts[i] |= LG_u8Leds[i];
+   \   00000C   4F4E         MOV.B   R14, R15
+   \   00000E   0F5F         RLA.W   R15
+   \   000010   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   000014   4E4E         MOV.B   R14, R14
+   \   000016   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   00001A   4F4F         MOV.B   R15, R15
+   \   00001C   8DDF0000     BIS.W   R15, 0(R13)
+   \   000020   0A3C         JMP     ??BlinkSM_Clockwise_3
+    140              }
+    141              /* Otherwise turn the LED off */
+    142              else
+    143              {
+    144                *LG_pu16LedPorts[i] &= ~LG_u8Leds[i];
+   \                     ??BlinkSM_Clockwise_2:
+   \   000022   4F4E         MOV.B   R14, R15
+   \   000024   0F5F         RLA.W   R15
+   \   000026   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   00002A   4E4E         MOV.B   R14, R14
+   \   00002C   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   000030   4F4F         MOV.B   R15, R15
+   \   000032   8DCF0000     BIC.W   R15, 0(R13)
+    145              }
+    146            }
+   \                     ??BlinkSM_Clockwise_3:
+   \   000036   5E53         ADD.B   #0x1, R14
+   \   000038   E43F         JMP     ??BlinkSM_Clockwise_0
+    147            
+    148            /* Increment and wrap the index pointer */
+    149            LG_u8ActiveIndex++;
+   \                     ??BlinkSM_Clockwise_1:
+   \   00003A   D253....     ADD.B   #0x1, &LG_u8ActiveIndex
+    150            if(LG_u8ActiveIndex == TOTAL_LEDS)
+   \   00003E   F292....     CMP.B   #0x8, &LG_u8ActiveIndex
+   \   000042   0220         JNE     ??BlinkSM_Clockwise_4
+    151            {
+    152              LG_u8ActiveIndex = 0;
+   \   000044   C243....     MOV.B   #0x0, &LG_u8ActiveIndex
+    153            }
+    154            
+    155            BlinkStateMachine = BlinkSM_Sleep;
+   \                     ??BlinkSM_Clockwise_4:
+   \   000048   B240........ MOV.W   #BlinkSM_Sleep, &BlinkStateMachine
+    156          
+    157              
+    158          } /* end BlinkSM_Clockwise() */
+   \   00004E   3041         RET
+    159          
+    160          
+    161          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    162          void BlinkSM_On()
+   \                     BlinkSM_On:
+    163          {
+    164            for(u8 i = 0; i < TOTAL_LEDS; i++)
+   \   000000   4E43         MOV.B   #0x0, R14
+   \                     ??BlinkSM_On_0:
+   \   000002   7E92         CMP.B   #0x8, R14
+   \   000004   0C2C         JC      ??BlinkSM_On_1
+    165            {
+    166              *LG_pu16LedPorts[i] |= LG_u8Leds[i];
+   \   000006   4F4E         MOV.B   R14, R15
+   \   000008   0F5F         RLA.W   R15
+   \   00000A   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   00000E   4E4E         MOV.B   R14, R14
+   \   000010   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   000014   4F4F         MOV.B   R15, R15
+   \   000016   8DDF0000     BIS.W   R15, 0(R13)
+    167            }
+   \   00001A   5E53         ADD.B   #0x1, R14
+   \   00001C   F23F         JMP     ??BlinkSM_On_0
+    168            
+    169            /* Sleep for max time (or could disable sleep timer interrupt */
+    170            u16GlobalCurrentSleepInterval = TIME_MAX;
+   \                     ??BlinkSM_On_1:
+   \   00001E   B243....     MOV.W   #0xffff, &u16GlobalCurrentSleepInterval
+    171            BlinkStateMachine = BlinkSM_Sleep;
+   \   000022   B240........ MOV.W   #BlinkSM_Sleep, &BlinkStateMachine
+    172          
+    173              
+    174          } /* end BlinkSM_On() */
+   \   000028   3041         RET
+    175          
+    176          
+    177          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    178          void BlinkSM_Off()
+   \                     BlinkSM_Off:
+    179          {
+    180            for(u8 i = 0; i < TOTAL_LEDS; i++)
+   \   000000   4E43         MOV.B   #0x0, R14
+   \                     ??BlinkSM_Off_0:
+   \   000002   7E92         CMP.B   #0x8, R14
+   \   000004   0C2C         JC      ??BlinkSM_Off_1
+    181            {
+    182              *LG_pu16LedPorts[i] &= ~LG_u8Leds[i];
+   \   000006   4F4E         MOV.B   R14, R15
+   \   000008   0F5F         RLA.W   R15
+   \   00000A   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   00000E   4E4E         MOV.B   R14, R14
+   \   000010   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   000014   4F4F         MOV.B   R15, R15
+   \   000016   8DCF0000     BIC.W   R15, 0(R13)
+    183            }
+   \   00001A   5E53         ADD.B   #0x1, R14
+   \   00001C   F23F         JMP     ??BlinkSM_Off_0
+    184            
+    185            /* Sleep for max time (or could disable sleep timer interrupt */
+    186            u16GlobalCurrentSleepInterval = TIME_MAX;
+   \                     ??BlinkSM_Off_1:
+   \   00001E   B243....     MOV.W   #0xffff, &u16GlobalCurrentSleepInterval
+    187            BlinkStateMachine = BlinkSM_Sleep;
+   \   000022   B240........ MOV.W   #BlinkSM_Sleep, &BlinkStateMachine
+    188          
+    189              
+    190          } /* end BlinkSM_Off() */
+   \   000028   3041         RET
+    191          
+    192           
+    193          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    194          void BlinkSM_Pulse()
+   \                     BlinkSM_Pulse:
+    195          {
+    196            static bool bCurrentlyOn = FALSE;
+    197            
+    198            /* LEDs are on, so turn them off and sleep long */
+    199            if(bCurrentlyOn)
+   \   000000   C293....     CMP.B   #0x0, &??bCurrentlyOn
+   \   000004   1524         JEQ     ??BlinkSM_Pulse_2
+    200            {
+    201              for(u8 i = 0; i < TOTAL_LEDS; i++)
+   \   000006   4E43         MOV.B   #0x0, R14
+   \                     ??BlinkSM_Pulse_0:
+   \   000008   7E92         CMP.B   #0x8, R14
+   \   00000A   0C2C         JC      ??BlinkSM_Pulse_3
+    202              {
+    203                *LG_pu16LedPorts[i] &= ~LG_u8Leds[i];
+   \   00000C   4F4E         MOV.B   R14, R15
+   \   00000E   0F5F         RLA.W   R15
+   \   000010   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   000014   4E4E         MOV.B   R14, R14
+   \   000016   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   00001A   4F4F         MOV.B   R15, R15
+   \   00001C   8DCF0000     BIC.W   R15, 0(R13)
+    204              }
+   \   000020   5E53         ADD.B   #0x1, R14
+   \   000022   F23F         JMP     ??BlinkSM_Pulse_0
+    205              bCurrentlyOn = FALSE;
+   \                     ??BlinkSM_Pulse_3:
+   \   000024   C243....     MOV.B   #0x0, &??bCurrentlyOn
+    206              u16GlobalCurrentSleepInterval = TIME_3S;
+   \   000028   B240E022.... MOV.W   #0x22e0, &u16GlobalCurrentSleepInterval
+   \   00002E   143C         JMP     ??BlinkSM_Pulse_4
+    207            }
+    208            /* LEDS are off, so turn them on and sleep short */
+    209            else
+    210            {
+    211              for(u8 i = 0; i < TOTAL_LEDS; i++)
+   \                     ??BlinkSM_Pulse_2:
+   \   000030   4E43         MOV.B   #0x0, R14
+   \                     ??BlinkSM_Pulse_1:
+   \   000032   7E92         CMP.B   #0x8, R14
+   \   000034   0C2C         JC      ??BlinkSM_Pulse_5
+    212              {
+    213                *LG_pu16LedPorts[i] |= LG_u8Leds[i];
+   \   000036   4F4E         MOV.B   R14, R15
+   \   000038   0F5F         RLA.W   R15
+   \   00003A   1D4F....     MOV.W   LG_pu16LedPorts(R15), R13
+   \   00003E   4E4E         MOV.B   R14, R14
+   \   000040   5F4E....     MOV.B   LG_u8Leds(R14), R15
+   \   000044   4F4F         MOV.B   R15, R15
+   \   000046   8DDF0000     BIS.W   R15, 0(R13)
+    214              }
+   \   00004A   5E53         ADD.B   #0x1, R14
+   \   00004C   F23F         JMP     ??BlinkSM_Pulse_1
+    215              bCurrentlyOn = TRUE;
+   \                     ??BlinkSM_Pulse_5:
+   \   00004E   D243....     MOV.B   #0x1, &??bCurrentlyOn
+    216              u16GlobalCurrentSleepInterval = TIME_125MS;
+   \   000052   B2407401.... MOV.W   #0x174, &u16GlobalCurrentSleepInterval
+    217            }
+    218          
+    219            BlinkStateMachine = BlinkSM_Sleep;
+   \                     ??BlinkSM_Pulse_4:
+   \   000058   B240........ MOV.W   #BlinkSM_Sleep, &BlinkStateMachine
+    220            
+    221          } /* end BlinkSM_Pulse() */
+   \   00005E   3041         RET
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     ??bCurrentlyOn:
+   \   000000                DS8 1
+    222          
+    223          
+    224          #if 0
+    225          /*----------------------------------------------------------------------------*/
+    226          void BlinkSM_ButtonCheck()
+    227          {
+    228          #if 0
+    229            /* Check for button press / hold */
+    230            SetTimer(TIME_3S);
+    231            while( !(P1IN & P1_0_BUTTON) && !(TACTL & TAIFG) )
+    232            {
+    233              P2OUT |= P2_2_LED4;
+    234            } 
+    235          
+    236            if( !(P1IN & P1_0_BUTTON) && (TACTL & TAIFG) )
+    237            {
+    238              BlinkStateMachine = BlinkSM_Clockwise;
+    239            } 
+    240            else
+    241            {
+    242              P2OUT &= ~P2_2_LED4;
+    243              BlinkStateMachine = BlinkSM_Sleep;
+    244            }
+    245          #endif
+    246            
+    247          } /* end BlinkSM_ButtonCheck */
+    248          #endif
+    249          
+    250          /*----------------------------------------------------------------------------*/
+
+   \                                 In  segment CODE, align 2
+    251          void BlinkSM_Sleep()
+   \                     BlinkSM_Sleep:
+    252          {
+    253            /* Update to the current sleep interval and re-enable the timer interrupt */
+    254            SetTimer(u16GlobalCurrentSleepInterval);
+   \   000000   1C42....     MOV.W   &u16GlobalCurrentSleepInterval, R12
+   \   000004   B012....     CALL    #SetTimer
+    255            TACTL = TIMERA_INT_ENABLE;
+   \   000008   B24096016001 MOV.W   #0x196, &0x160
+    256              
+    257            /* Enter low power mode */
+    258            __bis_SR_register(CPUOFF);
+   \   00000E   32D01000     BIS.W   #0x10, SR
+    259               
+    260            /* Wake up (timer interrupt is off now from ISR) and go to next state */
+    261            BlinkStateMachine = G_fCurrentStateMachine;
+   \   000012   9242........ MOV.W   &G_fCurrentStateMachine, &BlinkStateMachine
+    262          
+    263          } /* end BlinkSM_Sleep */
+   \   000018   3041         RET
+   \   00001A                REQUIRE _A_TA0CTL
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for BlinkStateMachine>`:
+   \   000000   ....         DC16 BlinkSM_Initialize
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for G_fCurrentStateMachine>`:
+   \   000000   ....         DC16 BlinkSM_Off
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for G_pfPatterns>`:
+   \   000000   ............ DC16 BlinkSM_Off, ClockwiseSetup, BlinkSM_Pulse, BlinkSM_On
+   \            ....        
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for LG_u8Leds>`:
+   \   000000   040240040201 DC8 4, 2, 64, 4, 2, 1, 4, 8
+   \            0408        
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for LG_pu16LedPorts>`:
+   \   000000   210021001900 DC16 21H, 21H, 19H, 19H, 19H, 19H, 29H, 21H
+   \            190019001900
+   \            29002100    
+    264          
+    265                
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       2  BlinkSM_Clockwise
+       2  BlinkSM_Initialize
+       2  BlinkSM_Off
+       2  BlinkSM_On
+       2  BlinkSM_Pulse
+       2  BlinkSM_Sleep
+            2 -> SetTimer
+       2  ClockwiseSetup
+       2  SetTimer
+       2  TestBlink
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ?<Initializer for BlinkStateMachine>
+       2  ?<Initializer for G_fCurrentStateMachine>
+       8  ?<Initializer for G_pfPatterns>
+      16  ?<Initializer for LG_pu16LedPorts>
+       8  ?<Initializer for LG_u8Leds>
+      80  BlinkSM_Clockwise
+      26  BlinkSM_Initialize
+      42  BlinkSM_Off
+      42  BlinkSM_On
+      96  BlinkSM_Pulse
+      26  BlinkSM_Sleep
+       2  BlinkStateMachine
+      40  ClockwiseSetup
+       2  G_fCurrentStateMachine
+       8  G_pfPatterns
+       1  G_u8ActivePattern
+      16  LG_pu16LedPorts
+       1  LG_u8ActiveIndex
+       8  LG_u8Leds
+      14  SetTimer
+       2  TA0CCR0
+       2  TA0R
+      18  TestBlink
+       1  _A_P1IE
+       1  _A_P1IFG
+       1  _A_P1OUT
+       1  _A_P2OUT
+       1  _A_P3OUT
+       2  _A_TA0CTL
+       1  bCurrentlyOn
+       2  u16GlobalCurrentSleepInterval
+       2  u16GlobalErrorFlags
+       2  u16GlobalRuntimeFlags
+
+ 
+ 384 bytes in segment CODE
+  11 bytes in segment DATA16_AN
+  36 bytes in segment DATA16_I
+  36 bytes in segment DATA16_ID
+   9 bytes in segment DATA16_Z
+ 
+ 384 bytes of CODE  memory
+  36 bytes of CONST memory
+  45 bytes of DATA  memory (+ 11 bytes shared)
+
+Errors: none
+Warnings: none

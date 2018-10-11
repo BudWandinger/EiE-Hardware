@@ -1,0 +1,865 @@
+###############################################################################
+#                                                                             #
+#     IAR Assembler V5.51.5.59999/W32  for MSP430 16/Sep/2014  15:09:58       #
+#     Copyright 1996-2012 IAR Systems AB.                                     #
+#                                                                             #
+#           Target option =  MSP430                                           #
+#           Source file   =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43#
+#           List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\cstartup.lst#
+#           Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\cstartup.r43#
+#           Command line  =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43 #
+#                            -OD:\Products\active_designs\BLINK-EFW-01\Debug\Obj\ #
+#                            -s+ -M<> -w+                                     #
+#                            -LD:\Products\active_designs\BLINK-EFW-01\Debug\List\ #
+#                            -t2 -x -r -D__MSP430F2122__                      #
+#                            -IC:\Program Files\IAR Systems\EW430_KS_5_51_5\430\INC\ #
+#                                                                             #
+###############################################################################
+
+      1    000000              /***********************************************
+                               ****************************
+      2    000000               *
+      3    000000               * System initialization code for the MSP430 IAR
+                                C/EC++ Compiler.
+      4    000000               *
+      5    000000               * Copyright 2002-2007 IAR Systems. All rights
+                                reserved.
+      6    000000               *
+      7    000000               * $Revision: 1.25 $
+      8    000000               *
+      9    000000               ***********************************************
+                               ****************************/
+     10    000000              
+     11    000000              /************************ Revision History
+                                ****************************
+     12    000000              YYYY-MM-DD  Comments
+     13    000000              ------------------------------------------------
+                               -------------------------------------------
+     14    000000              2013-11-21  Complete port from ANT Key Fob
+                                firmware (again)
+     15    000000              
+     16    000000              ************************************************
+                               ************************/
+     17    000000              
+     18    000000              ;***********************************************
+                               **********************
+     19    000000              ; Firmware version (value is added to info
+                                memory below)
+     20    000000              #define VERSION 1
+     21    000000              ;***********************************************
+                               **********************
+     22    000000              
+     23    000000              ; There are two libraries provided with
+                                compilers from IAR Systems,
+     24    000000              ; CLib and DLib.  This file is designed to work
+                                with both libraries.
+     25    000000              ; Some parts of it is DLib-specific.  However,
+                                those parts will not
+     26    000000              ; be included when building an appplication
+                                using CLib.
+     27    000000              
+     28    000000              #include "macros.m43"
+     29    000000              #include "cfi.m43"
+     30    000000              #include <msp430x21x2.h>
+     31    000000              #include <io430x21x2.h>
+     32    000000              
+     33    000000                  XCFI_NAMES libNames
+     33.1  000000                      .CFI    Names libNames
+     33.2  000000                      .CFI    StackFrame CFA SP DATA
+     33.3  000000                      .CFI    Resource PC:16, SP:16, SR:16,
+                                R4:16, R5:16, R6:16, R7:16
+     33.4  000000                      .CFI    Resource R8:16, R9:16, R10:16,
+                                R11:16, R12:16, R13:16, R14:16
+     33.5  000000                      .CFI    Resource R15:16
+     33.6  000000                      .CFI    EndNames libNames
+     33.7  000000                      ENDM
+     34    000000                  XCFI_COMMON libCommon, libNames
+     34.1  000000                      .CFI    Common libCommon using
+                                libNames
+     34.2  000000                      .CFI    CodeAlign 2
+     34.3  000000                      .CFI    DataAlign 2
+     34.4  000000                      .CFI    ReturnAddress PC CODE
+     34.5  000000                      .CFI    CFA SP+2
+     34.6  000000                      .CFI    PC  Frame(CFA, -2)
+     34.7  000000                      .CFI    SR  Undefined
+     34.8  000000                      .CFI    R4  SameValue
+     34.9  000000                      .CFI    R5  SameValue
+     34.10 000000                      .CFI    R6  SameValue
+     34.11 000000                      .CFI    R7  SameValue
+     34.12 000000                      .CFI    R8  SameValue
+     34.13 000000                      .CFI    R9  SameValue
+     34.14 000000                      .CFI    R10 SameValue
+     34.15 000000                      .CFI    R11 SameValue
+     34.16 000000                      .CFI    R12 SameValue
+     34.17 000000                      .CFI    R13 SameValue
+     34.18 000000                      .CFI    R14 SameValue
+     34.19 000000                      .CFI    R15 SameValue
+     34.20 000000                      .CFI    EndCommon libCommon
+     34.21 000000                      ENDM
+     35    000000              
+     36    000000              ; ----------------------------------------------
+                               -----------
+     37    000000              ; Define reset vector.
+     38    000000              
+     39    000000                  MODULE  ?reset_vector
+     40    000000              
+     41    000000                  RSEG    RESET:CONST:NOROOT(1)
+     42    000000                  PUBLIC  ?reset_vector
+     43    000000                  EXTERN  __program_start
+     44    000000              
+     45    000000              ?reset_vector:
+     46    000000 ....             DC16    __program_start
+     47    000002              
+     48    000002                  ENDMOD
+
+
+
+Segment             Type 	Mode
+----------------------------------------
+RESET               CONST  	REL 
+
+Label               Mode   Type                   Segment    Value/Offset
+------------------------------------------------------------------------------
+?reset_vector       REL    CONST PUB UNTYP.       RESET      0 
+ADC10AE0            ABS    CONST UNTYP.           ASEG       4A 
+ADC10AE1            ABS    CONST UNTYP.           ASEG       4B 
+ADC10CTL0           ABS    CONST UNTYP.           ASEG       1B0 
+ADC10CTL1           ABS    CONST UNTYP.           ASEG       1B2 
+ADC10DTC0           ABS    CONST UNTYP.           ASEG       48 
+ADC10DTC1           ABS    CONST UNTYP.           ASEG       49 
+ADC10MEM            ABS    CONST UNTYP.           ASEG       1B4 
+ADC10SA             ABS    CONST UNTYP.           ASEG       1BC 
+BCSCTL1             ABS    CONST UNTYP.           ASEG       57 
+BCSCTL2             ABS    CONST UNTYP.           ASEG       58 
+BCSCTL3             ABS    CONST UNTYP.           ASEG       53 
+CACTL1              ABS    CONST UNTYP.           ASEG       59 
+CACTL2              ABS    CONST UNTYP.           ASEG       5A 
+CALBC1_12MHZ        ABS    CONST UNTYP.           ASEG       10FB 
+CALBC1_16MHZ        ABS    CONST UNTYP.           ASEG       10F9 
+CALBC1_1MHZ         ABS    CONST UNTYP.           ASEG       10FF 
+CALBC1_8MHZ         ABS    CONST UNTYP.           ASEG       10FD 
+CALDCO_12MHZ        ABS    CONST UNTYP.           ASEG       10FA 
+CALDCO_16MHZ        ABS    CONST UNTYP.           ASEG       10F8 
+CALDCO_1MHZ         ABS    CONST UNTYP.           ASEG       10FE 
+CALDCO_8MHZ         ABS    CONST UNTYP.           ASEG       10FC 
+CAPD                ABS    CONST UNTYP.           ASEG       5B 
+CFA                 ABS    CONST UNTYP.           ASEG       Not solved 
+CodeAlign           ABS    CONST UNTYP.           ASEG       Not solved 
+DCOCTL              ABS    CONST UNTYP.           ASEG       56 
+DataAlign           ABS    CONST UNTYP.           ASEG       Not solved 
+EndCommon           ABS    CONST UNTYP.           ASEG       Not solved 
+EndNames            ABS    CONST UNTYP.           ASEG       Not solved 
+FCTL1               ABS    CONST UNTYP.           ASEG       128 
+FCTL2               ABS    CONST UNTYP.           ASEG       12A 
+FCTL3               ABS    CONST UNTYP.           ASEG       12C 
+Frame               ABS    CONST UNTYP.           ASEG       Not solved 
+IE1                 ABS    CONST UNTYP.           ASEG       0 
+IE2                 ABS    CONST UNTYP.           ASEG       1 
+IFG1                ABS    CONST UNTYP.           ASEG       2 
+IFG2                ABS    CONST UNTYP.           ASEG       3 
+Names               ABS    CONST UNTYP.           ASEG       Not solved 
+P1DIR               ABS    CONST UNTYP.           ASEG       22 
+P1IE                ABS    CONST UNTYP.           ASEG       25 
+P1IES               ABS    CONST UNTYP.           ASEG       24 
+P1IFG               ABS    CONST UNTYP.           ASEG       23 
+P1IN                ABS    CONST UNTYP.           ASEG       20 
+P1OUT               ABS    CONST UNTYP.           ASEG       21 
+P1REN               ABS    CONST UNTYP.           ASEG       27 
+P1SEL               ABS    CONST UNTYP.           ASEG       26 
+P1SEL2              ABS    CONST UNTYP.           ASEG       41 
+P2DIR               ABS    CONST UNTYP.           ASEG       2A 
+P2IE                ABS    CONST UNTYP.           ASEG       2D 
+P2IES               ABS    CONST UNTYP.           ASEG       2C 
+P2IFG               ABS    CONST UNTYP.           ASEG       2B 
+P2IN                ABS    CONST UNTYP.           ASEG       28 
+P2OUT               ABS    CONST UNTYP.           ASEG       29 
+P2REN               ABS    CONST UNTYP.           ASEG       2F 
+P2SEL               ABS    CONST UNTYP.           ASEG       2E 
+P2SEL2              ABS    CONST UNTYP.           ASEG       42 
+P3DIR               ABS    CONST UNTYP.           ASEG       1A 
+P3IN                ABS    CONST UNTYP.           ASEG       18 
+P3OUT               ABS    CONST UNTYP.           ASEG       19 
+P3REN               ABS    CONST UNTYP.           ASEG       10 
+P3SEL               ABS    CONST UNTYP.           ASEG       1B 
+Resource            ABS    CONST UNTYP.           ASEG       Not solved 
+ReturnAddress       ABS    CONST UNTYP.           ASEG       Not solved 
+SameValue           ABS    CONST UNTYP.           ASEG       Not solved 
+StackFrame          ABS    CONST UNTYP.           ASEG       Not solved 
+TA0CCR0             ABS    CONST UNTYP.           ASEG       172 
+TA0CCR1             ABS    CONST UNTYP.           ASEG       174 
+TA0CCR2             ABS    CONST UNTYP.           ASEG       176 
+TA0CCTL0            ABS    CONST UNTYP.           ASEG       162 
+TA0CCTL1            ABS    CONST UNTYP.           ASEG       164 
+TA0CCTL2            ABS    CONST UNTYP.           ASEG       166 
+TA0CTL              ABS    CONST UNTYP.           ASEG       160 
+TA0IV               ABS    CONST UNTYP.           ASEG       12E 
+TA0R                ABS    CONST UNTYP.           ASEG       170 
+TA1CCR0             ABS    CONST UNTYP.           ASEG       192 
+TA1CCR1             ABS    CONST UNTYP.           ASEG       194 
+TA1CCTL0            ABS    CONST UNTYP.           ASEG       182 
+TA1CCTL1            ABS    CONST UNTYP.           ASEG       184 
+TA1CTL              ABS    CONST UNTYP.           ASEG       180 
+TA1IV               ABS    CONST UNTYP.           ASEG       11E 
+TA1R                ABS    CONST UNTYP.           ASEG       190 
+TLV_ADC10_1_LEN     ABS    CONST UNTYP.           ASEG       10DB 
+TLV_ADC10_1_TAG     ABS    CONST UNTYP.           ASEG       10DA 
+TLV_CHECKSUM        ABS    CONST UNTYP.           ASEG       10C0 
+TLV_DCO_30_LEN      ABS    CONST UNTYP.           ASEG       10F7 
+TLV_DCO_30_TAG      ABS    CONST UNTYP.           ASEG       10F6 
+UCA0ABCTL           ABS    CONST UNTYP.           ASEG       5D 
+UCA0BR0             ABS    CONST UNTYP.           ASEG       62 
+UCA0BR1             ABS    CONST UNTYP.           ASEG       63 
+UCA0CTL0            ABS    CONST UNTYP.           ASEG       60 
+UCA0CTL1            ABS    CONST UNTYP.           ASEG       61 
+UCA0IRRCTL          ABS    CONST UNTYP.           ASEG       5F 
+UCA0IRTCTL          ABS    CONST UNTYP.           ASEG       5E 
+UCA0MCTL            ABS    CONST UNTYP.           ASEG       64 
+UCA0RXBUF           ABS    CONST UNTYP.           ASEG       66 
+UCA0STAT            ABS    CONST UNTYP.           ASEG       65 
+UCA0TXBUF           ABS    CONST UNTYP.           ASEG       67 
+UCB0BR0             ABS    CONST UNTYP.           ASEG       6A 
+UCB0BR1             ABS    CONST UNTYP.           ASEG       6B 
+UCB0CTL0            ABS    CONST UNTYP.           ASEG       68 
+UCB0CTL1            ABS    CONST UNTYP.           ASEG       69 
+UCB0I2CIE           ABS    CONST UNTYP.           ASEG       6C 
+UCB0I2COA           ABS    CONST UNTYP.           ASEG       118 
+UCB0I2CSA           ABS    CONST UNTYP.           ASEG       11A 
+UCB0RXBUF           ABS    CONST UNTYP.           ASEG       6E 
+UCB0STAT            ABS    CONST UNTYP.           ASEG       6D 
+UCB0TXBUF           ABS    CONST UNTYP.           ASEG       6F 
+Undefined           ABS    CONST UNTYP.           ASEG       Not solved 
+WDTCTL              ABS    CONST UNTYP.           ASEG       120 
+__program_start     ABS    CONST EXT [000] UNTYP. __EXTERNS  Solved Extern 
+libCommon           ABS    CONST UNTYP.           ASEG       Not solved 
+libNames            ABS    CONST UNTYP.           ASEG       Not solved 
+using               ABS    CONST UNTYP.           ASEG       Not solved 
+
+
+##############################
+#          CRC:DF33          #
+#        Errors:   0         #
+#        Warnings: 0         #
+#          Bytes: 2          #
+##############################
+
+
+
+###############################################################################
+#                                                                             #
+#     IAR Assembler V5.51.5.59999/W32  for MSP430 16/Sep/2014  15:09:58       #
+#     Copyright 1996-2012 IAR Systems AB.                                     #
+#                                                                             #
+#           Target option =  MSP430                                           #
+#           Source file   =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43#
+#           List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\cstartup.lst#
+#           Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\cstartup.r43#
+#           Command line  =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43 #
+#                            -OD:\Products\active_designs\BLINK-EFW-01\Debug\Obj\ #
+#                            -s+ -M<> -w+                                     #
+#                            -LD:\Products\active_designs\BLINK-EFW-01\Debug\List\ #
+#                            -t2 -x -r -D__MSP430F2122__                      #
+#                            -IC:\Program Files\IAR Systems\EW430_KS_5_51_5\430\INC\ #
+#                                                                             #
+###############################################################################
+
+     49    000000              
+     50    000000              
+     51    000000              ; ----------------------------------------------
+                               -----------
+     52    000000              ; Define NMI vector.
+     53    000000              
+     54    000000                  MODULE  ?nmi_vector
+     55    000000              
+     56    000000                  RSEG    NMI:CONST:NOROOT(1)
+     57    000000                  PUBLIC  ?nmi_vector
+     58    000000                  EXTERN  __program_start
+     59    000000              
+     60    000000              ?nmi_vector:
+     61    000000 ....             DC16    __program_start
+     62    000002              
+     63    000002                  ENDMOD
+
+
+
+Segment             Type 	Mode
+----------------------------------------
+NMI                 CONST  	REL 
+
+Label               Mode   Type                   Segment    Value/Offset
+------------------------------------------------------------------------------
+?nmi_vector         REL    CONST PUB UNTYP.       NMI        0 
+__program_start     ABS    CONST EXT [000] UNTYP. __EXTERNS  Solved Extern 
+
+
+##############################
+#          CRC:2AE4          #
+#        Errors:   0         #
+#        Warnings: 0         #
+#          Bytes: 2          #
+##############################
+
+
+
+###############################################################################
+#                                                                             #
+#     IAR Assembler V5.51.5.59999/W32  for MSP430 16/Sep/2014  15:09:58       #
+#     Copyright 1996-2012 IAR Systems AB.                                     #
+#                                                                             #
+#           Target option =  MSP430                                           #
+#           Source file   =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43#
+#           List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\cstartup.lst#
+#           Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\cstartup.r43#
+#           Command line  =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43 #
+#                            -OD:\Products\active_designs\BLINK-EFW-01\Debug\Obj\ #
+#                            -s+ -M<> -w+                                     #
+#                            -LD:\Products\active_designs\BLINK-EFW-01\Debug\List\ #
+#                            -t2 -x -r -D__MSP430F2122__                      #
+#                            -IC:\Program Files\IAR Systems\EW430_KS_5_51_5\430\INC\ #
+#                                                                             #
+###############################################################################
+
+     64    000000              
+     65    000000              ; ----------------------------------------------
+                               -----------
+     66    000000              ; The cstartup code -- perform initialization,
+                                call __low_level_init, 
+     67    000000              ; and call main.  If main returns the exit
+                                system is started.
+     68    000000              
+     69    000000                  MODULE  ?cstart
+     70    000000              
+     71    000000              ; Ensure that this is built with the same
+                                "position independent
+     72    000000              ; code" settings as the compiler uses.
+     73    000000              
+     74    000000                  XPICRTMODEL
+     74.1  000000                      RTMODEL "__pic", "no"
+     74.2  000000                      ENDM
+     75    000000              
+     76    000000              ; Forward declarations of segments.
+     77    000000              
+     78    000000                  RSEG    HEAP:DATA:NOROOT(1)
+     79    000000                  RSEG    CSTACK:DATA:NOROOT
+     80    000000              
+     81    000000                  RSEG    DATA16_Z:DATA:NOROOT
+     82    000000                  RSEG    DATA16_I:DATA:NOROOT
+     83    000000                  RSEG    DATA16_ID:DATA:NOROOT
+     84    000000              
+     85    000000                  RSEG  DEVICE_INFO_SEGC:CONST:ROOT
+     86    000000              
+     87    000000              firmware_version
+     88    000000 0100           DC16  VERSION
+     89    000002              
+     90    000002              /*
+     91    000002              ; Calibration values in case you happen to erase
+                                them...  No guarantees that they will
+     92    000002              ; match the ones you killed -- they were taken
+                                from an MSP430F2011.
+     93    000002              ; Requires uncommenting of the CAL_VALUES
+                                segment code in lnk430F2122_KEYFB.xcl
+     94    000002              
+     95    000002                    RSEG  CAL_VALUES:CONST:ROOT
+     96    000002              
+     97    000002                DC16  0xffff, 0x8aba
+     98    000002                DC16  0x8f80, 0x8e87
+     99    000002                DC8   0x7e, 0x8d
+    100    000002                DC8   0xc2, 0x86
+    101    000002              */
+    102    000002              
+    103    000002              ; ----------------------------------------------
+                               -----------
+    104    000002              ; System initialization.
+    105    000002              
+    106    000000                  RSEG CSTART:CODE:NOROOT(1)
+    107    000000                  PUBLIC  __program_start
+    108    000000              
+    109    000000                  EXTERN  ?reset_vector
+    110    000000                  REQUIRE ?reset_vector
+    111    000000                  REQUIRE ?cstart_call_low_level_init
+    112    000000                  REQUIRE ?cstart_call_main
+    113    000000               
+    114    000000              __program_start:
+    115    000000              
+    116    000000                  PUBLIC ?cstart_begin
+    117    000000              ?cstart_begin:
+    118    000000              
+    119    000000 B240805A2001     MOV     #WDTPW + WDTHOLD, &WDTCTL_  ; Turn
+                                            off the watchdog
+    120    000006 3140....         MOV     #SFE(CSTACK), SP            ;
+                                                        Initialize SP to point
+                                                        to the top of the
+                                                        stack.
+    121    00000A              
+    122    00000A              ; ----------------------------------------------
+                               -
+    123    00000A              ; Segment initialization:
+    124    00000A              ;
+    125    00000A              ; xxx_Z  -- uninitialized data that are filled
+                                with zeros.
+    126    00000A              ; xxx_I  -- initialized data that gets the
+                                values from the corresponding
+    127    00000A              ;           xxx_ID segment.
+    128    00000A              
+    129    00000A              
+    130    00000A              #ifndef IGNORE_SEG_INIT
+    131    00000A              #ifndef IGNORE_DATA16_DATA
+    132    00000A              
+    133    00000A              
+    134    00000A              ; Clear DATA16_Z.
+    135    00000A              
+    136    000000                   RSEG CSTART:CODE:NOROOT(1)
+    137    000000                   PUBLIC  ?cstart_init_zero
+    138    000000                   EXTERN  __data16_memzero
+    139    000000              
+    140    000000              ?cstart_init_zero:
+    141    000000 3C40....          MOV     #SFB DATA16_Z,    CW0
+    142    000004 3D40....          MOV     #sizeof DATA16_Z, CW1
+    143    000008              
+    144    000008                   XCALL   #__data16_memzero
+    144    000008                      FCALL   #__data16_memzero
+    144.1  000008              #if USE_LARGE_CODE_MODEL
+    144.2  000008              #else
+    144.3  000008 B012....             CALL    #__data16_memzero
+    144.4  00000C              #endif
+    144.5  00000C                      ENDM
+    144.6  00000C                      ENDM
+    145    00000C              
+    146    00000C              
+    147    00000C              ; Copy DATA16_ID to DATA16_I
+    148    00000C              
+    149    000000                   RSEG CSTART:CODE:NOROOT(1)
+    150    000000                   PUBLIC  ?cstart_init_copy
+    151    000000                   EXTERN  __data16_memcpy
+    152    000000              
+    153    000000              ?cstart_init_copy:
+    154    000000 3C40....          MOV     #SFB DATA16_I,  CW0
+    155    000004 3D40....          MOV     #SFB DATA16_ID, CW1
+    156    000008              
+    157    000008              #if CALLING_CONVENTION == 1
+    162    000008              #else
+    163    000008 3E40....          MOV     #sizeof DATA16_I, CW2
+    164    00000C              
+    165    00000C                   XCALL   #__data16_memcpy
+    165    00000C                      FCALL   #__data16_memcpy
+    165.1  00000C              #if USE_LARGE_CODE_MODEL
+    165.2  00000C              #else
+    165.3  00000C B012....             CALL    #__data16_memcpy
+    165.4  000010              #endif
+    165.5  000010                      ENDM
+    165.6  000010                      ENDM
+    166    000010              #endif ; CALLING_CONVENTION
+    167    000010              
+    168    000010              #endif ; IGNORE_DATA16_DATA
+    169    000010              
+    170    000010              
+    171    000010              ; ----------------------------------------------
+                               -
+    172    000010              ; Call __low_level_init to perform initializatio
+                               n before initializing
+    173    000010              ; segments and calling main. If the function
+                                returns 0 no segment
+    174    000010              ; initialization should take place.
+    175    000010              
+    176    000010              
+    177    000000                  RSEG CSTART:CODE:NOROOT(1)
+    178    000000                  PUBLIC  ?cstart_call_low_level_init
+    179    000000                  EXTERN  __low_level_init
+    180    000000                
+    181    000000              
+    182    000000              ?cstart_call_low_level_init:
+    183    000000                   XCALL   #__low_level_init
+    183    000000                      FCALL   #__low_level_init
+    183.1  000000              #if USE_LARGE_CODE_MODEL
+    183.2  000000              #else
+    183.3  000000 B012....             CALL    #__low_level_init
+    183.4  000004              #endif
+    183.5  000004                      ENDM
+    183.6  000004                      ENDM
+    184    000004              
+    185    000004              ; ----------------------------------------------
+                               -
+    186    000004              ; Call main() with no arguments and then exit
+                                using the return value
+    187    000004              ; of main as the parameter.
+    188    000004              
+    189    000000                   RSEG CSTART:CODE:NOROOT(1)
+    190    000000                   PUBLIC  ?cstart_call_main
+    191    000000              
+    192    000000                   EXTERN  main
+    193    000000                   EXTERN  exit
+    194    000000              
+    195    000000              ?cstart_call_main:
+    196    000000                   XCALL   #main
+    196    000000                      FCALL   #main
+    196.1  000000              #if USE_LARGE_CODE_MODEL
+    196.2  000000              #else
+    196.3  000000 B012....             CALL    #main
+    196.4  000004              #endif
+    196.5  000004                      ENDM
+    196.6  000004                      ENDM
+    197    000004                   XCALL   #exit
+    197    000004                      FCALL   #exit
+    197.1  000004              #if USE_LARGE_CODE_MODEL
+    197.2  000004              #else
+    197.3  000004 B012....             CALL    #exit
+    197.4  000008              #endif
+    197.5  000008                      ENDM
+    197.6  000008                      ENDM
+    198    000008              
+    199    000000                   PUBLIC  ?cstart_end
+    200    000008              ?cstart_end:
+    201    000008              
+    202    000008                   ENDMOD  __program_start
+
+
+
+Segment             Type 	Mode
+----------------------------------------
+CSTACK              DATA  	REL 
+CSTART              CODE  	REL 
+DATA16_I            DATA  	REL 
+DATA16_ID           DATA  	REL 
+DATA16_Z            DATA  	REL 
+DEVICE_INFO_SEGC    CONST  	REL 
+HEAP                DATA  	REL 
+
+Label               Mode   Type                   Segment    Value/Offset
+------------------------------------------------------------------------------
+?cstart_begin       REL    CONST PUB UNTYP.       CSTART     0 
+?cstart_call_low_level_initREL    CONST PUB UNTYP.       CSTART     0 
+?cstart_call_main   REL    CONST PUB UNTYP.       CSTART     0 
+?cstart_end         REL    CONST PUB UNTYP.       CSTART     8 
+?cstart_init_copy   REL    CONST PUB UNTYP.       CSTART     0 
+?cstart_init_zero   REL    CONST PUB UNTYP.       CSTART     0 
+?reset_vector       ABS    CONST EXT [000] UNTYP. __EXTERNS  Solved Extern 
+__data16_memcpy     ABS    CONST EXT [002] UNTYP. __EXTERNS  Solved Extern 
+__data16_memzero    ABS    CONST EXT [001] UNTYP. __EXTERNS  Solved Extern 
+__low_level_init    ABS    CONST EXT [003] UNTYP. __EXTERNS  Solved Extern 
+__program_start     REL    CONST PUB UNTYP.       CSTART     0 
+exit                ABS    CONST EXT [005] UNTYP. __EXTERNS  Solved Extern 
+firmware_version    REL    CONST UNTYP.           DEVICE_INF 0 
+main                ABS    CONST EXT [004] UNTYP. __EXTERNS  Solved Extern 
+
+
+##############################
+#          CRC:68DB          #
+#        Errors:   0         #
+#        Warnings: 0         #
+#         Bytes: 52          #
+##############################
+
+
+
+###############################################################################
+#                                                                             #
+#     IAR Assembler V5.51.5.59999/W32  for MSP430 16/Sep/2014  15:09:58       #
+#     Copyright 1996-2012 IAR Systems AB.                                     #
+#                                                                             #
+#           Target option =  MSP430                                           #
+#           Source file   =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43#
+#           List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\cstartup.lst#
+#           Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\cstartup.r43#
+#           Command line  =  D:\Products\active_designs\BLINK-EFW-01\cstartup.s43 #
+#                            -OD:\Products\active_designs\BLINK-EFW-01\Debug\Obj\ #
+#                            -s+ -M<> -w+                                     #
+#                            -LD:\Products\active_designs\BLINK-EFW-01\Debug\List\ #
+#                            -t2 -x -r -D__MSP430F2122__                      #
+#                            -IC:\Program Files\IAR Systems\EW430_KS_5_51_5\430\INC\ #
+#                                                                             #
+###############################################################################
+
+    203    000000              
+    204    000000              
+    205    000000              ; ----------------------------------------------
+                               -----------
+    206    000000              ; __low_level_init
+    207    000000              ;
+    208    000000              ; This function sets up the I/O, processor
+                                clock, Timer A, the flash timer, adc,
+    209    000000              ; spi and interrupts.  It also determines if the
+                                cstartup code should initialize 
+    210    000000              ; values in the the data segments by return 0 to
+                                the caller.
+    211    000000              ;
+    212    000000              ; Requires:
+    213    000000              ; - 
+    214    000000              ;
+    215    000000              ; Promises:
+    216    000000              ; - GPIOs are configured per the LedBlinker
+                                schematics
+    217    000000              ;  - The internal RC is set as the main clock
+                                source
+    218    000000              ;  - The flash timer is set to use the DCO clock
+                                with the proper division
+    219    000000              ;  - ADC is configured to read the battery
+                                voltage
+    220    000000              ;  - The SPI module is configured to communicate
+                                with the ANT module
+    221    000000              ;  - The system interrupts are set, though
+                                interrupts are not enabled yet except for
+                                NMIs
+    222    000000              ;   - Returns 0 in W0 (R12 as defined in
+                                macros.m43) to skip initialization
+    223    000000              ;   of the data segments (change this to 1 to
+                                enable data seg. init)
+    224    000000              ;      - clk_error_bit is set if the 32kHz clock
+                                does not start properly
+    225    000000              
+    226    000000                  MODULE  lowinit
+    227    000000                  PUBLIC  __low_level_init
+    228    000000                  RSEG    CODE:CODE:NOROOT(1)
+    229    000000              
+    230    000000              __low_level_init: 
+    231    000000              ; For maximum power savings, the device runs off
+                                the built in low power 12kHz oscillator,
+                                VLOCLK.
+    232    000000              ; If serial communication is required, the clock
+                                is switched to the DCO that should
+    233    000000              ; provide adequate timing for 9600 baud
+                                serial.
+    234    000000              ; When everything is up and running:
+    235    000000              ;   - MCLK is sourced from VLOCLK with no
+                                scaling
+    236    000000              ;   - ACLK is sourced from VLOCLK and is the
+                                time base for TimerA with no scaling
+    237    000000              ;   - SMCLK is not required.
+    238    000000              clock_setup
+    239    000000              ;  BIC.W   #OSCOFF, SR              ; Turn on
+                                LFXT1CLK osc. in status reg
+    240    000000 F24087005700   MOV.B   #10000111b, &BCSCTL1_     ; <7> [1]
+                                                                    XT2
+                                                                    off
+    241    000006                                                  ; <6> [0]
+                                LFXT1 in low frequency mode
+    242    000006                                                  ; <5-4> [00]
+                                ACLK divider 1:1
+    243    000006                                                  ; <3-0>
+                                [0111] default RSEL value for mid frequency
+                                range
+    244    000006 F240C8005800   MOV.B   #11001000b, &BCSCTL2_     ; <7-6> [11]
+                                                                    MCLK is
+                                                                    LFXT1CLK or
+                                                                    VLOCLK
+                                                                    
+    245    00000C                                                  ; <5-4> [00[
+                                MCLK divider is 1:1
+    246    00000C                                                  ; <3> [1]
+                                SMCLK to LFXT1CLK or VLOCLK 
+    247    00000C                                                  ; <2-1> [00]
+                                SMCLK divider 1:1
+    248    00000C                                                  ; <0> [0]
+                                DCO on internal resistor
+    249    00000C F24020005300   MOV.B   #00100000b, &BCSCTL3_     ; <7-6> [00]
+                                                                    Unused XT2
+                                                                    bits
+    250    000012                                                  ; <5-4> [10]
+                                LFXT1 is VLOCLK 
+    251    000012                                                  ; <3-2> [00]
+                                N/A load caps
+    252    000012                                                  ; <1> [0]
+                                XT2 fault flag clear
+    253    000012                                                  ; <0> [0]
+                                LFXT fault flag clear
+    254    000012              
+    255    000012              ; Switch main clock to LFXT1 and turn off
+                                DCO
+    256    000012 F2D0C8005800   BIS.B   #11001000b, &BCSCTL2_       ; MCLK and
+                                      SMCLK are LFXT1CLK
+    257    000018 72D0C000       BIS.B   #SCG0 + SCG1, SR            ; Turn off
+                                                                      DCO and
+                                                                      SMCLK
+    258    00001C              
+    259    00001C              gpio_setup
+    260    00001C              ; Setup I/O per the following:
+    261    00001C              ;  - P1.0 input BUTTON
+    262    00001C              ;  - P1.1 output LED5 (active high)
+    263    00001C              ;  - P1.2 output LED1 (active high)
+    264    00001C              ;  - P1.3 output LED8 (active high)
+    265    00001C              ;  - P1.4 JTAG TCK no configuration
+    266    00001C              ;  - P1.5 JTAG TMS no configuration
+    267    00001C              ;  - P1.6 JTAG TDI no configuration
+    268    00001C              ;  - P1.7 JTAG TDO no configuration
+    269    00001C              
+    270    00001C              ;  - P2.0 TP1 / output ACLK
+    271    00001C              ;  - P2.1 TP2 / output SMCLK
+    272    00001C              ;  - P2.2 output LED4 (active high)
+    273    00001C              ;  - P2.3 TP7 output low
+    274    00001C              ;  - P2.4 TP8 output low
+    275    00001C              ;  - P2.5 output system tick
+    276    00001C              ;  - P2.6 TP4 output low
+    277    00001C              ;  - P2.7 TP3 output low
+    278    00001C              
+    279    00001C              ;  - P3.0 output LED7 (active high)
+    280    00001C              ;  - P3.1 output LED3 (active high)
+    281    00001C              ;  - P3.2 output LED6 (active high)
+    282    00001C              ;  - P3.3 TP5 output low
+    283    00001C              ;  - P3.4 UART POMI
+    284    00001C              ;  - P3.5 UART PIMO
+    285    00001C              ;  - P3.6 output LED2 (active high)
+    286    00001C              ;  - P3.7 TP6 output low
+    287    00001C              
+    288    00001C              ; Set up GPIO.  For data direction, 0 = input, 1
+                                = output.
+    289    00001C C2432600       MOV.B #00000000b, &P1SEL_     ; All pins
+                                                                GPIO
+    290    000020 F2400E002200   MOV.B #00001110b, &P1DIR_     ; LEDs are
+                                                                outputs
+    291    000026 C2432100       MOV.B #00000000b, &P1OUT_     ; Start with all
+                                                                lights
+                                                                off
+    292    00002A                
+    293    00002A F24003002E00   MOV.B #00000011b, &P2SEL_     ; Clock outs on
+                                                                0 and 1, all
+                                                                else GPIO
+    294    000030 F2432A00       MOV.B #11111111b, &P2DIR_     ; All pins
+                                                                output
+    295    000034 C2432900       MOV.B #00000000b, &P2OUT_     ; Start with all
+                                                                lights
+                                                                off
+    296    000038                
+    297    000038 F24030001B00   MOV.B #00110000b, &P3SEL_     ; Pins 4 and 5
+                                                                are UART
+                                                                (USCIA)
+    298    00003E F24047001A00   MOV.B #01000111b, &P3DIR_     ; 
+    299    000044 C2431900       MOV.B #00000000b, &P3OUT_     ; 
+    300    000048              
+    301    000048              
+    302    000048              ; Setup timerA
+    303    000048              timerA_setup
+    304    000048 B24090016001   MOV.W #0000000110010000b, &TACTL_   ; <15-10>
+                                      [000000] not used
+    305    00004E                                                    ; <9-8>
+                                [01] ACLK Timer A clock source
+    306    00004E                                                    ; <7-6>
+                                [10] Input divider /4
+    307    00004E                                                    ; <5-4>
+                                [01] Up mode
+    308    00004E                                                    ; <3> [0]
+                                not used
+    309    00004E                                                    ; <2> [0]
+                                Don't reset the timer
+    310    00004E                                                    ; <1> [0]
+                                Disable the timer interrupt
+    311    00004E                                                    ; <0> [0]
+                                Clear the interrupt flag
+    312    00004E B24000107201   MOV.W #0x1000, &TACCR0_             ;
+    313    000054                
+    314    000054              
+    315    000054              
+    316    000054              ; Setup the UART peripheral.  
+    317    000054              uart_setup
+    318    000054 C2436000       MOV.B #00000000b,&UCA0CTL0_         ; <7> [0]
+                                      Parity disabled
+    319    000058                                                    ; <6> [0]
+                                N/A
+    320    000058                                                    ; <5> [0]
+                                LSB first
+    321    000058                                                    ; <4> [0]
+                                8-bit data
+    322    000058                                                    ; <3> [0]
+                                One stop bit
+    323    000058                                                    ; <2-1>
+                                [00] UART Mode
+    324    000058                                                    ; <0> [0]
+                                Asynchronous mode
+    325    000058 F24041006100   MOV.B #01000001b, &UCA0CTL1_        ; <7-6>
+                                      [01] USCI clock source is ACLK
+    326    00005E                                                    ; <5> [0]
+                                No Receive erroneous-character interrupt
+    327    00005E                                                    ; <4> [0]
+                                No Receive break character interrupt
+    328    00005E                                                    ; <3> [0]
+                                Not dormant
+    329    00005E                                                    ; <2> [0]
+                                N/A
+    330    00005E                                                    ; <1> [0]
+                                Next frame transmitted is not a break
+    331    00005E                                                    ; <0> [1]
+                                USCI in reset
+    332    00005E C2436200       MOV.B #0x00, &UCA0BR0_              ; Set low
+                                      byte of baud rate register               
+                                                            
+    333    000062 C2436300       MOV.B #0x00, &UCA0BR1_              ; Set high
+                                      byte of baud rate register               
+                                                            
+    334    000066              
+    335    000066              ; Setup interrupts.  The active interrupts in
+                                this program are:
+    336    000066              ;  - Port1.0: Button input.  The interrupt is
+                                only enabled during sleep to force wake-up.
+    337    000066              ;    The interrupt should fire on a high-to-low
+                                transition of the active-low button.
+    338    000066              ;  - TimerA during sleep -- enabled in
+                                main.
+    339    000066              
+    340    000066              interrupt_setup
+    341    000066 F2C006000200   BIC.B #ACCVIFG + OFIFG, &IFG1_      ; Clear
+                                      NMI flags of interest
+    342    00006C              ;  BIS.B #ACCVIE + OFIE, &IE1_         ; Enable
+                                oscillator fault and memory access interrupts
+    343    00006C D2432400       MOV.B #00000001b, &P1IES_           ; Set P1.0
+                                      (button) interrupts on high-to-low
+                                      transition
+    344    000070              ; MOV.B #00000100b, &P2IES_           ; Set P2.2
+                                (motion) interrupts on high-to-low transition
+    345    000070                
+    346    000070              low_level_init_end
+    347    000070                XRET                            
+    347    000070                      FRET
+    347.1  000070              #if USE_LARGE_CODE_MODEL
+    347.2  000070              #else
+    347.3  000070 3041                 RET
+    347.4  000072              #endif
+    347.5  000072                      ENDM
+    347.6  000072                      ENDM
+    348    000072                                                     
+                                
+    349    000072                ENDMOD
+
+
+
+Segment             Type 	Mode
+----------------------------------------
+CODE                CODE  	REL 
+
+Label               Mode   Type                   Segment    Value/Offset
+------------------------------------------------------------------------------
+__low_level_init    REL    CONST PUB UNTYP.       CODE       0 
+clock_setup         REL    CONST UNTYP.           CODE       0 
+gpio_setup          REL    CONST UNTYP.           CODE       1C 
+interrupt_setup     REL    CONST UNTYP.           CODE       66 
+low_level_init_end  REL    CONST UNTYP.           CODE       70 
+timerA_setup        REL    CONST UNTYP.           CODE       48 
+uart_setup          REL    CONST UNTYP.           CODE       54 
+
+
+##############################
+#          CRC:3AC2          #
+#        Errors:   0         #
+#        Warnings: 0         #
+#         Bytes: 114         #
+##############################
+
+
+
+
+
+
+Segment             Type 	Mode
+----------------------------------------
+
+
+
+##############################
+#          CRC:3AC2          #
+#        Errors:   0         #
+#        Warnings: 0         #
+#         Bytes: 114         #
+#     Modules:        4      #
+#     Total errors:   0      #
+#     Total warnings: 0      #
+##############################
+
+
+
+

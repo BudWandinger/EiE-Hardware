@@ -1,0 +1,243 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V5.51.5.59999/W32 for MSP430       16/Sep/2014  15:09:58 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  D:\Products\active_designs\BLINK-EFW-01\main.c          #
+#    Command line  =  D:\Products\active_designs\BLINK-EFW-01\main.c -lC      #
+#                     D:\Products\active_designs\BLINK-EFW-01\Debug\List\ -o  #
+#                     D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\      #
+#                     --no_cse --no_unroll --no_inline --no_code_motion       #
+#                     --no_tbaa --debug -D__MSP430F2122__ -e --double=32      #
+#                     --dlib_config "C:\Program Files\IAR                     #
+#                     Systems\EW430_KS_5_51_5\430\LIB\DLIB\dl430fn.h" -On     #
+#                     --segment __data16=DATA16 --segment __data20=DATA20     #
+#    List file     =  D:\Products\active_designs\BLINK-EFW-01\Debug\List\main #
+#                     .lst                                                    #
+#    Object file   =  D:\Products\active_designs\BLINK-EFW-01\Debug\Obj\main. #
+#                     r43                                                     #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+D:\Products\active_designs\BLINK-EFW-01\main.c
+      1          /**********************************************************************
+      2          File name:	main.c
+      3          
+      4          Main program file for Blinker 
+      5          A simple program to sequentially blink an array of 8 LEDs, where 
+      6          blinking pattern is selectable by button press.
+      7          
+      8          When complete, the following modes will be available:
+      9          1. Off
+     10          2. All LEDs on (this will stress the battery!)
+     11          3. Random blinking
+     12          4. Cyclical blink
+     13          
+     14          **********************************************************************/
+     15          
+     16          
+     17          
+     18          
+     19          /************************ Revision History ****************************
+     20          YYYY-MM-DD  Checksum  Comments
+     21          -------------------------------------------------------------------------------------------
+     22          2009-04-08            First release. 
+     23          
+     24          ************************************************************************/
+     25          
+     26          #include "io430.h"
+
+   \                                 In  segment DATA16_AN, at 0x20
+   \   union <unnamed> volatile _A_P1IN
+   \                     _A_P1IN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x23
+   \   union <unnamed> volatile _A_P1IFG
+   \                     _A_P1IFG:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x160
+   \   union <unnamed> volatile _A_TA0CTL
+   \                     _A_TA0CTL:
+   \   000000                DS8 2
+     27          #include "typedef_MSP430.h"
+     28          #include "intrinsics.h"
+     29          #include "main.h"
+     30          #include "blink-efwd-01.h"
+     31          
+     32          
+     33          /************************ External Program Globals ****************************/
+     34          /* Globally available variables from other files as indicated */
+     35          extern fnCode_type BlinkStateMachine;                 /* From blink-efwd-01.c */
+     36          extern fnCode_type G_fCurrentStateMachine;            /* From blink-efwd-01.c */
+     37          extern fnCode_type G_pfPatterns[];                    /* From blink-efwd-01.c */
+     38           
+     39          
+     40          extern volatile u16 u16GlobalRuntimeFlags;            /* From blink-efwd-01.c */
+     41          extern volatile u16 u16GlobalErrorFlags;              /* From blink-efwd-01.c */
+     42          
+     43          extern volatile u8 u8GlobalCurrentSleepInterval;      /* From blink-efwd-01.c */
+     44          extern volatile u8 G_u8ActivePattern;                 /* From blink-efwd-01.c */
+     45          extern fnCode_type LG_fPatterns[];                    /* From blink-efwd-01.c */
+     46          
+     47          
+     48          /************************ Program Globals ****************************/
+     49          /* Global variable definitions intended for scope of multiple files */
+     50          
+     51          
+     52          /************************ Main Program ****************************/
+     53          /* From cstartup.s43, the processor is running from the ACLK, TimerA is running, and I/O lines have been configured. */
+     54          
+
+   \                                 In  segment CODE, align 2
+     55          int main(void)
+   \                     main:
+     56          {
+     57          
+     58            /* Enter the state machine where the program will remain unless power cycled */
+     59            __bis_SR_register(GIE);
+   \   000000   32D2         BIS.W   #0x8, SR
+     60          
+     61            while(1)
+     62            {
+     63          	  BlinkStateMachine();
+   \                     ??main_0:
+   \   000002   9212....     CALL    &BlinkStateMachine
+   \   000006   FD3F         JMP     ??main_0
+     64            } 
+     65            
+     66          } /* end main */
+     67          
+     68          
+     69          /************************ Interrupt Service Routines ****************************/
+     70          #pragma vector = PORT1_VECTOR
+
+   \                                 In  segment CODE, align 2
+     71          __interrupt void Port1ISR(void)
+   \                     Port1ISR:
+     72          /* Handles waking up from low power mode via a button press and returns with processor awake */
+     73          {
+   \   000000   0F12         PUSH.W  R15
+   \   000002   0E12         PUSH.W  R14
+     74            /* Debounce the button press for 10 ms -- not a great idea in an ISR but ok for a hack */
+     75            /* 120 / 12,000 = 10 ms */
+     76            for(u16 i = 0; i < 120; i++);
+   \   000004   0F43         MOV.W   #0x0, R15
+   \                     ??Port1ISR_0:
+   \   000006   3F907800     CMP.W   #0x78, R15
+   \   00000A   022C         JC      ??Port1ISR_1
+   \   00000C   1F53         ADD.W   #0x1, R15
+   \   00000E   FB3F         JMP     ??Port1ISR_0
+     77            
+     78            /* If button is still down, consider it a valid press */
+     79            if( !(P1IN & P1_0_BUTTON) )
+   \                     ??Port1ISR_1:
+   \   000010   D2B32000     BIT.B   #0x1, &0x20
+   \   000014   0E2C         JC      ??Port1ISR_2
+     80            {
+     81              /* Advance to the next pattern */
+     82              G_u8ActivePattern++;
+   \   000016   D253....     ADD.B   #0x1, &G_u8ActivePattern
+     83              if(G_u8ActivePattern == TOTAL_PATTERNS)
+   \   00001A   E292....     CMP.B   #0x4, &G_u8ActivePattern
+   \   00001E   0220         JNE     ??Port1ISR_3
+     84              {
+     85                G_u8ActivePattern = 0;
+   \   000020   C243....     MOV.B   #0x0, &G_u8ActivePattern
+     86              }
+     87          
+     88              G_fCurrentStateMachine = G_pfPatterns[G_u8ActivePattern];
+   \                     ??Port1ISR_3:
+   \   000024   5F42....     MOV.B   &G_u8ActivePattern, R15
+   \   000028   4F4F         MOV.B   R15, R15
+   \   00002A   0F5F         RLA.W   R15
+   \   00002C   924F........ MOV.W   G_pfPatterns(R15), &G_fCurrentStateMachine
+     89            }
+     90           
+     91            /* Clear the flag, but keep the interrupt active */
+     92            P1IFG &= ~P1_0_BUTTON;
+   \                     ??Port1ISR_2:
+   \   000032   D2C32300     BIC.B   #0x1, &0x23
+     93            
+     94            //u8GlobalCurrentSleepInterval = SLEEP_TIME;
+     95            //u8GlobalSleepCounter = 1;
+     96            //TACTL = TIMERA_INT_DISABLE;
+     97            asm("BIC #0x0010,4(SP)"); 
+   \   000036   B1C010000400 BIC #0x0010,4(SP)
+     98          } /* end Port1ISR */
+   \   00003C   3E41         POP.W   R14
+   \   00003E   3F41         POP.W   R15
+   \   000040   0013         RETI
+   \   000042                REQUIRE _A_P1IN
+   \   000042                REQUIRE _A_P1IFG
+     99          
+    100          
+    101          /*----------------------------------------------------------------------------*/
+    102          #pragma vector = TIMER0_A1_VECTOR
+
+   \                                 In  segment CODE, align 2
+    103          __interrupt void TimerAISR(void)
+   \                     TimerAISR:
+    104          {
+    105          /* Handles waking up from low power mode via TimerA expiration and returns with processor awake */
+    106            
+    107            //u8GlobalCurrentSleepInterval = SLEEP_TIME;
+    108            TACTL = TIMERA_INT_DISABLE;
+   \   000000   B24094016001 MOV.W   #0x194, &0x160
+    109            asm("BIC #0x0010,0(SP)");
+   \   000006   B1C010000000 BIC #0x0010,0(SP)
+    110          } // end timer_wakeup_isr
+   \   00000C   0013         RETI
+   \   00000E                REQUIRE _A_TA0CTL
+
+   \                                 In  segment INTVEC, offset 0x4, root
+   \                     `??Port1ISR??INTVEC 4`:
+   \   000004   ....         DC16    Port1ISR
+
+   \                                 In  segment INTVEC, offset 0x10, root
+   \                     `??TimerAISR??INTVEC 16`:
+   \   000010   ....         DC16    TimerAISR
+    111          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       8  Port1ISR
+       4  TimerAISR
+       2  main
+            2 -- Indirect call
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ??Port1ISR??INTVEC 4
+       2  ??TimerAISR??INTVEC 16
+      66  Port1ISR
+      14  TimerAISR
+       1  _A_P1IFG
+       1  _A_P1IN
+       2  _A_TA0CTL
+       8  main
+
+ 
+ 88 bytes in segment CODE
+  4 bytes in segment DATA16_AN
+  4 bytes in segment INTVEC
+ 
+ 88 bytes of CODE  memory
+  0 bytes of CONST memory (+ 4 bytes shared)
+  0 bytes of DATA  memory (+ 4 bytes shared)
+
+Errors: none
+Warnings: none
